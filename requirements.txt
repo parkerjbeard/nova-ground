@@ -1,0 +1,9 @@
+PyQt5
+PyOpenGL
+PyYAML
+pynvml
+pyzmq
+pyzmq
+pyzmq
+pyzmq
+pyglet
