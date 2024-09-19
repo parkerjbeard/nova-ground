@@ -1,8 +1,10 @@
-# NovaGround Ground Control System
+# NovaGround Control System
 
-![NovaGround Logo](resources/icons/logo.png)
+**NovaGround Control System** is an open-source Ground Control System designed for the NovaGround model rocket.
 
-**NovaGround Ground Control System** is an open-source Ground Control System designed for the NovaGround model rocket. Leveraging the power of **PyQt** for a sleek user interface and **Pyglet** for real-time 3D rendering, NovaGround GCS provides comprehensive telemetry visualization, mission management controls, and post-mission data analysis. Whether you're a hobbyist rocket enthusiast or an educational project, NovaGround GCS offers the tools you need to monitor and manage your rocket flights with precision and ease.
+![NovaGround Main GUI Screenshot](images/novaground-maingui-screenshot.png)
+
+**NovaGround Control System** is an open-source Ground Control System designed for the Nova model rocket. Leveraging the power of **PyQt** for a sleek user interface and **Panda3d** for real-time 3D rendering, NovaGround provides comprehensive telemetry visualization, mission management controls, and post-mission data analysis. Whether you're a hobbyist rocket enthusiast or an educational project, NovaGround offers the tools you need to monitor and manage your rocket flights with precision and ease.
 
 ## Features
 
@@ -21,8 +23,8 @@
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/parkerjbeard/NovaGround_GCS.git
-cd NovaGround_GCS
+git clone https://github.com/parkerjbeard/NovaGround.git
+cd NovaGround
 ```
 
 ### Install Dependencies
