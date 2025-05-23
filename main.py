@@ -32,7 +32,7 @@ def main():
     app.setOrganizationDomain("novoground.com")
 
     # Specify the path to the rocket model file if available
-    rocket_model_path = "models/rocket.egg"  # Update this path as needed
+    rocket_model_path = "assets/rocket_model.obj"  # Update this path as needed
 
     main_window = MainWindow(rocket_model_path=rocket_model_path)
     main_window.show()

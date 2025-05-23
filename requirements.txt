@@ -3,7 +3,7 @@ PyOpenGL
 PyYAML
 pynvml
 pyzmq
-pyzmq
-pyzmq
-pyzmq
 pyglet
+panda3d
+pyqtgraph
+numpy

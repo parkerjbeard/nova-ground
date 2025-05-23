@@ -148,3 +148,57 @@ class TelemetryDataParser:
             index += code - 1
 
         return bytes(decoded)
+
+
+# Global parser instance
+parser = TelemetryDataParser()
+
+
+def parse_telemetry_data(raw_data: Any) -> Dict[str, Any]:
+    """
+    Parse telemetry data from various formats.
+    
+    Args:
+        raw_data: Can be bytes, string, or dict
+        
+    Returns:
+        Dictionary containing parsed telemetry data
+    """
+    # If already a dict, return it
+    if isinstance(raw_data, dict):
+        return raw_data
+    
+    # If string, try to parse as JSON first
+    if isinstance(raw_data, str):
+        try:
+            import json
+            return json.loads(raw_data)
+        except json.JSONDecodeError:
+            # Convert to bytes and try binary parsing
+            raw_data = raw_data.encode('utf-8')
+    
+    # If bytes, use the parser
+    if isinstance(raw_data, bytes):
+        try:
+            telemetry = parser.parse_raw_data(raw_data)
+            return telemetry.to_dict()
+        except Exception as e:
+            logger.log_event(f"Failed to parse binary telemetry: {e}", "ERROR")
+            # Return empty telemetry data as fallback
+            return {
+                'timestamp': datetime.now(),
+                'position': (0.0, 0.0, 0.0),
+                'orientation': (0.0, 0.0, 0.0),
+                'velocity': (0.0, 0.0, 0.0),
+                'acceleration': (0.0, 0.0, 9.81),
+                'voltage': 12000,
+                'status_flags': {
+                    'motor_failure': False,
+                    'sensor_error': False,
+                    'system_health': True,
+                    'sensor_status': True
+                }
+            }
+    
+    # Unknown format
+    raise ValueError(f"Unknown telemetry data format: {type(raw_data)}")

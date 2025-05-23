@@ -1,45 +1,38 @@
 from src.utils.data_parser import parse_telemetry_data
-from src.utils.constants import ROCKETLINK_LIB_PATH
 from src.utils.logger import logger
-from typing import Dict, Any
-from enum import Enum
-import ctypes
+from src.backend.cplusplus_bindings import backend, Command, BackendMode
+from typing import Dict, Any, Optional
 
-
-
-
-class Command(Enum):
-    START_MISSION = 1
-    ABORT_MISSION = 2
-    REQUEST_TELEMETRY = 3
-    CALIBRATE_SENSORS = 4
 
 class CommunicationError(Exception):
     pass
 
+
 class RocketLinkInterface:
+    """
+    Interface for communication with the rocket backend.
+    Uses the new backend bindings with automatic fallback to simulation mode.
+    """
+    
     def __init__(self):
-        self.rocketlink_lib = None
         self.connection_established = False
 
     def initialize_connection(self) -> None:
         """
         Establishes and configures the connection with the RocketLink backend.
+        Automatically falls back to simulation mode if real backend is unavailable.
         """
         try:
-            self.rocketlink_lib = ctypes.CDLL(ROCKETLINK_LIB_PATH)
-            self.rocketlink_lib.initialize.restype = ctypes.c_int
-            self.rocketlink_lib.send_command.argtypes = [ctypes.c_int]
-            self.rocketlink_lib.send_command.restype = ctypes.c_int
-            self.rocketlink_lib.receive_telemetry.restype = ctypes.c_char_p
-            self.rocketlink_lib.close_connection.restype = ctypes.c_int
-
-            result = self.rocketlink_lib.initialize()
-            if result != 0:
-                raise CommunicationError("Failed to initialize RocketLink connection")
+            # Backend is already initialized in cplusplus_bindings module
+            status = backend.get_connection_status()
+            self.connection_established = status["connected"]
             
-            self.connection_established = True
-            logger.log_event("RocketLink connection established", "INFO")
+            if self.connection_established:
+                mode_str = "real backend" if status["backend_available"] else "simulation mode"
+                logger.log_event(f"RocketLink connection established ({mode_str})", "INFO")
+            else:
+                raise CommunicationError("Failed to establish backend connection")
+                
         except Exception as e:
             logger.log_event(f"Error initializing RocketLink connection: {str(e)}", "ERROR")
             raise CommunicationError(f"Failed to initialize RocketLink connection: {str(e)}")
@@ -54,10 +47,10 @@ class RocketLinkInterface:
             raise CommunicationError("Connection not established. Call initialize_connection() first.")
 
         try:
-            result = self.rocketlink_lib.send_command(command.value)
-            if result != 0:
+            success = backend.send_command(command)
+            if not success:
                 raise CommunicationError(f"Failed to send command: {command.name}")
-            logger.log_event(f"Command sent: {command.name}", "INFO")
+                
         except Exception as e:
             logger.log_event(f"Error sending command: {str(e)}", "ERROR")
             raise CommunicationError(f"Failed to send command: {str(e)}")
@@ -72,13 +65,19 @@ class RocketLinkInterface:
             raise CommunicationError("Connection not established. Call initialize_connection() first.")
 
         try:
-            raw_data = self.rocketlink_lib.receive_telemetry()
-            if raw_data is None:
+            telemetry_data = backend.receive_telemetry()
+            if telemetry_data is None:
                 raise CommunicationError("Failed to receive telemetry data")
             
-            telemetry_data = parse_telemetry_data(raw_data.decode('utf-8'))
+            # Log the telemetry data
             logger.log_telemetry(telemetry_data)
+            
+            # Parse if needed (backend already returns parsed data in new implementation)
+            if isinstance(telemetry_data, str):
+                telemetry_data = parse_telemetry_data(telemetry_data)
+                
             return telemetry_data
+            
         except Exception as e:
             logger.log_event(f"Error receiving telemetry: {str(e)}", "ERROR")
             raise CommunicationError(f"Failed to receive telemetry: {str(e)}")
@@ -91,15 +90,32 @@ class RocketLinkInterface:
             return
 
         try:
-            result = self.rocketlink_lib.close_connection()
-            if result != 0:
-                raise CommunicationError("Failed to close RocketLink connection")
-            
+            backend.close_connection()
             self.connection_established = False
             logger.log_event("RocketLink connection closed", "INFO")
+            
         except Exception as e:
             logger.log_event(f"Error closing RocketLink connection: {str(e)}", "ERROR")
             raise CommunicationError(f"Failed to close RocketLink connection: {str(e)}")
+    
+    def get_connection_mode(self) -> str:
+        """
+        Get the current connection mode (real or simulation).
+        
+        :return: String describing the connection mode
+        """
+        status = backend.get_connection_status()
+        return "Real Backend" if status["backend_available"] else "Simulation Mode"
+    
+    def is_simulation_mode(self) -> bool:
+        """
+        Check if running in simulation mode.
+        
+        :return: True if in simulation mode, False if using real backend
+        """
+        status = backend.get_connection_status()
+        return not status["backend_available"]
+
 
 # Global RocketLinkInterface instance
 rocket_link = RocketLinkInterface()

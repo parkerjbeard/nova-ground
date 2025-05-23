@@ -1,14 +1,16 @@
 from pathlib import Path
+import os
 
 # Telemetry Configuration
 UPDATE_INTERVAL_MS = 100
 DATA_FORMAT = 'AVC_SCALPEL'
 
 # File Paths
-LOG_DIR = Path('/var/log/novoground')
+# Use user's home directory for logs to avoid permission issues
+LOG_DIR = Path.home() / '.novoground' / 'logs'
 TELEMETRY_LOG_FILE = 'telemetry.log'
 EVENT_LOG_FILE = 'events.log'
-CONFIG_FILE_PATH = Path('/etc/novoground/config.yaml')
+CONFIG_FILE_PATH = Path.home() / '.novoground' / 'config.yaml'
 
 # Communication Parameters
 RADIO_MODULE = 'XBeePro900HP'

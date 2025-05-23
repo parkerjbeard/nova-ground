@@ -61,7 +61,7 @@ class RocketView(ShowBase):
         logging.info("Default camera controls disabled.")
 
         # Load shaders
-        self.basic_shader = ShaderProgram(vertex_shader_file="shaders/basic.vert", fragment_shader_file="shaders/basic.frag")
+        self.basic_shader = ShaderProgram(vertex_shader_file="src/shaders/basic.vert", fragment_shader_file="src/shaders/basic.frag")
         logging.info("Basic shader loaded.")
 
         # Setup lighting

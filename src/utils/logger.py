@@ -5,6 +5,9 @@ import logging
 
 class Logger:
     def __init__(self):
+        # Ensure log directory exists before setting up loggers
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        
         self.telemetry_logger = self._setup_logger('telemetry', TELEMETRY_LOG_FILE)
         self.event_logger = self._setup_logger('event', EVENT_LOG_FILE)
 
